@@ -1,0 +1,76 @@
+```{python}
+import pandas as pd
+import statsmodels.api as sm
+import seaborn as sns
+import re
+import matplotlib.pyplot as plt
+
+
+
+
+
+baseball = pd.read_csv("C:/users/Patri/Downloads/Teams (1).csv")
+
+recent_years = baseball["yearID"].max()
+
+cutoff_year = recent_years - 24 
+
+teams_25 = baseball[baseball["yearID"] >= cutoff_year]
+
+print(recent_years, cutoff_year)
+
+
+print(teams_25.columns)
+
+
+winners_25years = ( 
+    teams_25.groupby("franchID", as_index = False)["W"]
+            .sum()
+            .sort_values("W", ascending = False)
+)
+
+top10 = winners_25years.head(10)
+
+print(top10)
+
+
+plt.scatter(top10["franchID"], top10["W"])
+
+plt.show()
+
+
+```
+
+## teams with the most home runs 
+```{python}
+hr_by_team = teams_25.groupby("franchID")["HR"].sum().reset_index()
+                
+
+top10_hr = hr_by_team.head(10)
+
+plt.scatter(top10_hr["franchID"], top10_hr["HR"])
+
+```
+
+
+## Regression Model 
+```{python}
+
+print(teams_25.columns)
+
+model_data = teams_25[["W", "HR", "ERA"]].dropna()
+
+x = model_data[["HR", "ERA"]]
+
+x = sm.add_constant(x)
+
+
+y = model_data["W"]
+
+ols_model = sm.OLS(y, x).fit()
+
+print (ols_model.summary())
+
+
+
+
